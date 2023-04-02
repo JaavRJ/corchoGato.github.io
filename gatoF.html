@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta content="jaav" name="author" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link type="text/css" rel="stylesheet" href="style.css" />
+    
+    <link rel="shortcut icon" href="jaavwhite.png" type="image/x-icon" >
+</head>
+<body>
+    <header>
+        <div class="nav">
+            <input type="checkbox">
+                    <span></span>
+                    <span></span>
+                    <menu class="menu">
+                            <li><a href="http://devsolutions.gerdoc.com/" target="_blank">DevSolutions</a></li>
+                            <li><a href="https://github.com/JaavRJ" target="_blank">GitHub</a></li>
+                            <li><a href="https://linktr.ee/jaav" target="_blank">contactos</a></li>
+                    </menu>
+    
+        </div>
+        <div class="haz"><p>Haz click en algun recuadro!!</p></div>
+        
+
+    </header>
+    <br />
+    <p id="message"></p>
+    <br />
+
+    <table id="tab-gato" cellspacing="0">
+        <tr>
+        <td id="00"></td>
+        <td id="01"></td>
+        <td id="02"></td>
+        </tr>
+        <tr>
+        <td id="10"></td>
+        <td id="11"></td>
+        <td id="12"></td>
+        </tr>
+        <tr>
+        <td id="20"></td>
+        <td id="21"></td>
+        <td id="22"></td>
+        </tr>
+    </table>
+    <br><br>
+    <button id="reiniciar"  class="bnt-restart">Reiniciar</button>
+  <script>
+    // Función para crear un tablero vacío
+function crearTablero() {
+      let tablero = [];
+      for (let i = 0; i < 3; i++) {
+        tablero.push([null, null, null]);
+      }
+      return tablero;
+}
+
+    // Variable para guardar el tablero del juego
+let tablero = crearTablero();
+
+    // Función para reiniciar el juego
+function reiniciar() {
+      tablero = crearTablero();
+      actualizarTablero(tablero);
+      document.getElementById('message').textContent = '';
+
+}
+
+
+    // Agregamos un evento de clic al botón "Reiniciar"
+document.getElementById('reiniciar').addEventListener('click', function() {
+      reiniciar();
+});
+
+
+
+    // Función para determinar si un movimiento es válido
+function esMovimientoValido(tablero, movimiento, jugador) {
+      let fila = movimiento[0];
+      let columna = movimiento[1];
+      return tablero[fila][columna] === null && jugador !== null;
+}
+
+    // Función para que la IA realice un movimiento al azar
+function movimientoIA(tablero) {
+      let movimientosDisponibles = [];
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (tablero[i][j] === null) {
+            movimientosDisponibles.push([i, j]);
+          }
+        }
+      }
+      let indiceMovimientoAleatorio = Math.floor(Math.random() * movimientosDisponibles.length);
+      return movimientosDisponibles[indiceMovimientoAleatorio];
+}
+
+    // Función para determinar si hay un ganador en el tablero
+function hayGanador(tablero) {
+      // Revisamos filas
+      for (let i = 0; i < 3; i++) {
+        if (tablero[i][0] !== null && tablero[i][0] === tablero[i][1] && tablero[i][0] === tablero[i][2]) {
+          return tablero[i][0];
+        }
+      }
+      // Revisamos columnas
+      for (let j = 0; j < 3; j++) {
+        if (tablero[0][j] !== null && tablero[0][j] === tablero[1][j] && tablero[0][j] === tablero[2][
+        j]) {
+    return tablero[0][j];
+    }
+    }
+    // Revisamos diagonales
+    if (tablero[0][0] !== null && tablero[0][0] === tablero[1][1] && tablero[0][0] === tablero[2][2]) {
+    return tablero[0][0];
+    }
+    if (tablero[0][2] !== null && tablero[0][2] === tablero[1][1] && tablero[0][2] === tablero[2][0]) {
+    return tablero[0][2];
+    }
+    
+    // Si no hay ganador, regresamos null
+    return null;
+}
+
+function esTableroCompleto(tablero) {
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (tablero[i][j] === null) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+// Función para actualizar el tablero en la página HTML
+function actualizarTablero(tablero) {
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      let casilla = document.getElementById(`${i}${j}`);
+      if (tablero[i][j] === null) {
+        casilla.textContent = '';
+      } else {
+        casilla.textContent = tablero[i][j];
+      }
+    }
+  }
+}
+
+
+
+// Agregamos un evento de clic a cada casilla del tablero
+let casillas = document.getElementsByTagName('td');
+for (let i = 0; i < casillas.length; i++) {
+  casillas[i].addEventListener('click', function() {
+    // Verificamos que la casilla esté vacía
+    if (this.textContent === '') {
+      // Obtenemos las coordenadas de la casilla
+      let fila = Number(this.id[0]);
+      let columna = Number(this.id[1]);
+      // Hacemos el movimiento del jugador
+      tablero[fila][columna] = 'X';
+      actualizarTablero(tablero);
+      // Verificamos si hay ganador
+      let ganador = hayGanador(tablero);
+      if (ganador !== null) {
+        document.getElementById('message').textContent = `Ganaste`;
+        return;
+      }else if (esTableroCompleto(tablero)) {
+        document.getElementById('message').textContent = `Meh, empate`;
+      }
+      // Hacemos el movimiento de la IA
+      let movimientoIARealizado = false;
+      while (!movimientoIARealizado) {
+        let movimiento = movimientoIA(tablero);
+        if (esMovimientoValido(tablero, movimiento, 'O')) {
+          tablero[movimiento[0]][movimiento[1]] = 'O';
+          actualizarTablero(tablero);
+          // Verificamos si hay ganador
+          let ganador = hayGanador(tablero);
+          if (ganador !== null) {
+            document.getElementById('message').textContent = `Perdiste, como pierdes en facil???`;
+            return;
+          }else if (esTableroCompleto(tablero)) {
+            document.getElementById('message').textContent = `Meh, empate`;
+            }
+          movimientoIARealizado = true;
+        }
+      }
+    }
+    
+  });
+}
+</script>
+</body>
+</html>
